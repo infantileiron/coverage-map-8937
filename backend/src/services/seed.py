@@ -4,11 +4,13 @@ from src.utils.identity import now
 from src.utils.security import hash_password
 from src.services.statistics import analyze
 
+SEED_RUN_TIME_LIMIT_S=8.0  # 演示运行求解限时收紧,正式运行仍为30秒
+
 def demo_data():
  rng=random.Random(2204);points=[]
  for i in range(180):
-  points.append({'site_id':f'YD-{i+1:03d}','label':f'{["芦汀","鹭洲","浅滩","杉湾"][i%4]}样点{i+1:03d}','latitude':round(31.26+rng.random()*.25,6),'longitude':round(120.44+rng.random()*.37,6),'weight':rng.choice([1,2,3,5,8])})
- candidates=[{'id':f'candidate-{i+1:02d}','name':f'{["芦汀","鹭洲","浅滩","杉湾"][i%4]}候选点{i+1:02d}','latitude':round(31.28+(i//6)*.065,6),'longitude':round(120.46+(i%6)*.065,6),'cost':float(1+i%3),'created_at':now()} for i in range(24)]
+  points.append({'site_id':f'YD-{i+1:03d}','label':f'{["芦汀","鹭洲","浅滩","杉湾"][i%4]}样点{i+1:03d}','latitude':round(31.26+rng.random()*.25,6),'longitude':round(120.44+rng.random()*.37,6),'weight':rng.choice([1,2,3,5,8]),'demand':rng.choice([1.0,1.5,2.0,2.5,3.0])})
+ candidates=[{'id':f'candidate-{i+1:02d}','name':f'{["芦汀","鹭洲","浅滩","杉湾"][i%4]}候选点{i+1:02d}','latitude':round(31.28+(i//6)*.065,6),'longitude':round(120.46+(i%6)*.065,6),'cost':float(1+i%3),'daily_capacity':float(24+(i%5)*8),'created_at':now()} for i in range(24)]
  return points,candidates
 
 def seed():
@@ -19,6 +21,8 @@ def seed():
  for c in candidates:repo.put('candidates',c,insert_only=True)
  repo.put('scenarios',{'id':'scenario-wetland','name':'秋季巡护 · 九万元六点上限','dataset_id':'ds-patrol','candidate_ids':[c['id'] for c in candidates],'radius_km':4.5,'budget':9,'max_sites':6,'created_at':now()},insert_only=True)
  repo.put('runs',{'id':'run-baseline','scenario_id':'scenario-wetland','status':'completed','result':analyze(points,candidates),'error':'','created_at':now()},insert_only=True)
+ repo.put('scenarios',{'id':'scenario-capacity','name':'秋季巡护 · 容量推演六点上限','dataset_id':'ds-patrol','candidate_ids':[c['id'] for c in candidates],'radius_km':4.5,'budget':9,'max_sites':6,'capacity_mode':True,'created_at':now()},insert_only=True)
+ repo.put('runs',{'id':'run-capacity','scenario_id':'scenario-capacity','status':'completed','result':analyze(points,candidates,capacity_mode=True,time_limit=SEED_RUN_TIME_LIMIT_S),'error':'','created_at':now()},insert_only=True)
  repo.put('reviews',{'id':'review-baseline','run_id':'run-baseline','comment':'球面直线距离及预算口径已检查；不替代航道可达性勘测。','status':'approved','reviewer':'admin@yedu.test','created_at':now()},insert_only=True)
  repo.put('reports',{'id':'report-baseline','run_id':'run-baseline','review_id':'review-baseline','title':'秋季补给点覆盖复核图册','created_at':now()},insert_only=True)
  return {t:len(repo.all_rows(t)) for t in ('users','datasets','candidates','scenarios','runs','reviews','reports')}

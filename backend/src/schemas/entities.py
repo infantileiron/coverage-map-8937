@@ -16,6 +16,7 @@ class CandidateInput(StrictModel):
  latitude:float=Field(ge=-90,le=90)
  longitude:float=Field(ge=-180,le=180)
  cost:float=Field(gt=0,le=100000)
+ daily_capacity:float|None=Field(default=None,gt=0,le=1000000)
 class CoverageScenarioInput(StrictModel):
  name:str=Field(min_length=2,max_length=100)
  dataset_id:str
@@ -23,6 +24,7 @@ class CoverageScenarioInput(StrictModel):
  radius_km:float=Field(default=4.5,gt=0,le=1000)
  budget:float=Field(default=9,ge=0,le=100000)
  max_sites:int=Field(default=6,ge=1,le=100)
+ capacity_mode:bool=False
 class RunInput(StrictModel):
  scenario_id:str
 class ReviewInput(StrictModel):

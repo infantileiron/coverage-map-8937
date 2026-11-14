@@ -15,6 +15,7 @@ class CandidateSite:
  longitude:float
  cost:float
  created_at:str=''
+ daily_capacity:float|None=None
 @dataclass
 class CoverageScenario:
  id:str
@@ -25,6 +26,7 @@ class CoverageScenario:
  budget:float=9
  max_sites:int=6
  created_at:str=''
+ capacity_mode:bool=False
 @dataclass
 class CoverageRun:
  id:str

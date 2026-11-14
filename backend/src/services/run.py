@@ -12,7 +12,7 @@ def execute(id):
     try:
         exp=repo.get("scenarios",run["scenario_id"])
         dataset=repo.get("datasets",exp["dataset_id"])
-        run["result"]=analyze(dataset["rows"],[repo.get("candidates",id) for id in exp["candidate_ids"]],exp["radius_km"],exp["budget"],exp["max_sites"])
+        run["result"]=analyze(dataset["rows"],[repo.get("candidates",id) for id in exp["candidate_ids"]],exp["radius_km"],exp["budget"],exp["max_sites"],capacity_mode=exp.get("capacity_mode",False))
         ARTIFACT_DIR.mkdir(parents=True,exist_ok=True)
         (ARTIFACT_DIR / (id+".json")).write_text(json.dumps(run["result"],ensure_ascii=False))
         run["status"]="completed"
